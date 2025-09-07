@@ -13,10 +13,7 @@ class TodoService:
         self.counter += 1
         todo = Todo(
             id=todo_id,
-            title=payload.title.strip(),
-            description=(payload.description.strip()
-                         if payload.description else None),
-            completed=payload.completed,
+            **payload.model_dump()
         )
         self.todos[todo_id] = todo
         return todo
