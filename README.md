@@ -1,2 +1,0 @@
-# FastAPI-practice
-FastAPI-practice
