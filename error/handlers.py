@@ -1,5 +1,5 @@
 # error/handlers.py
-import logging
+from log import logger
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.status import (
@@ -49,16 +49,23 @@ def register_exception_handlers(app: FastAPI) -> None:
         status = _status_for_app_error(exc)
         # 상태코드에 따라 로깅 레벨 차등
         if 400 <= status < 500:
-            print(
-                f'app_error path: {request.url.path}, context: {exc.context}, code: {exc.code}')
+            logger.info("app_error", extra={"path": request.url.path,
+                                            "context": exc.context, "code": exc.code})
         else:
-            print(
-                f'app_error path: {request.url.path}, context: {exc.context}, code: {exc.code}')
+            logger.warning("app_error", extra={"path": request.url.path,
+                                               "context": exc.context, "code": exc.code})
         return _problem(str(exc), code=exc.code, status=status, request=request, context=exc.context)
 
     @app.exception_handler(Exception)
     async def _unhandled(request: Request, exc: Exception):
-        print(f"unhandled_exception path: {request.url.path}")
+        logger.error(
+            "unhandled_exception",
+            extra={
+                "path": request.url.path,
+                "code": "INTERNAL_SERVER_ERROR",
+                "context": {"error": str(exc)},
+            },
+        )
         # 내부 오류는 상세를 숨기고 일반화된 메시지
         return _problem("Internal server error", code="INTERNAL_SERVER_ERROR",
                         status=HTTP_500_INTERNAL_SERVER_ERROR, request=request)
