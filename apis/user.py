@@ -46,8 +46,6 @@ def get_user(
     svc: UserService = Depends(get_user_service),
 ) -> UserOut:
     user = svc.get_user(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     return remove_password(user)
 
 
@@ -62,8 +60,6 @@ def login_user(
     svc: UserService = Depends(get_user_service),
 ) -> UserOut:
     user = svc.login_user(payload)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     return remove_password(user)
 
 
@@ -80,8 +76,6 @@ def update_user(
     svc: UserService = Depends(get_user_service),
 ) -> UserOut:
     user = svc.update_user(user_id, payload)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     response.headers["ETag"] = f'W/"user-{user.id}-0"'
     return remove_password(user)
 
@@ -95,7 +89,5 @@ def delete_user(
     user_id: int,
     svc: UserService = Depends(get_user_service),
 ) -> None:
-    ok = svc.delete_user(user_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="User not found")
+    svc.delete_user(user_id)
     return None

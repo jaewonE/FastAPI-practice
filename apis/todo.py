@@ -59,8 +59,6 @@ def get_todo(
     svc: TodoService = Depends(get_todo_service),
 ) -> Todo:
     todo = svc.get_todo(todo_id)
-    if not todo:
-        raise HTTPException(status_code=404, detail="Todo not found")
     return todo
 
 
@@ -77,8 +75,6 @@ def update_todo(
     svc: TodoService = Depends(get_todo_service),
 ) -> Todo:
     todo = svc.update_todo(todo_id, payload)
-    if not todo:
-        raise HTTPException(status_code=404, detail="Todo not found")
     # 간단한 Weak ETag 재설정
     response.headers["ETag"] = f'W/"todo-{todo.id}-0"'
     return todo
@@ -93,7 +89,5 @@ def delete_todo(
     todo_id: int,
     svc: TodoService = Depends(get_todo_service),
 ) -> None:
-    ok = svc.delete_todo(todo_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Todo not found")
+    svc.delete_todo(todo_id)
     return None

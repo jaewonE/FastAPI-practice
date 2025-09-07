@@ -2,6 +2,7 @@
 import bcrypt
 from typing import Optional
 from schemas.user import User, CreateUserInput, UpdateUserInput, LoginUserInput
+from error.exceptions import UserAlreadyExistsError, LoginFailedError, UserNotFoundError
 
 
 class UserService:
@@ -10,6 +11,9 @@ class UserService:
         self.counter = 0
 
     def create_user(self, payload: CreateUserInput) -> User:
+        if len([u for u in self.users.values() if u.name == payload.name]) > 0:
+            raise UserAlreadyExistsError(context={"name": payload.name})
+
         user_id = self.counter
         self.counter += 1
         payload.password = bcrypt.hashpw(
@@ -22,15 +26,18 @@ class UserService:
         for user in self.users.values():
             if user.name == payload.name and bcrypt.checkpw(payload.password.encode(), user.password.encode()):
                 return user
-        return None
+        raise LoginFailedError(context={"name": payload.name})
 
     def get_user(self, user_id: int) -> Optional[User]:
-        return self.users.get(user_id)
+        user = self.users.get(user_id)
+        if not user:
+            raise UserNotFoundError(context={"user_id": user_id})
+        return user
 
     def update_user(self, user_id: int, payload: UpdateUserInput) -> Optional[User]:
         user = self.users.get(user_id)
         if not user:
-            return None
+            raise UserNotFoundError(context={"user_id": user_id})
         if payload.password:
             payload.password = bcrypt.hashpw(
                 payload.password.encode(), bcrypt.gensalt()).decode()
@@ -39,11 +46,11 @@ class UserService:
         self.users[user_id] = updated
         return updated
 
-    def delete_user(self, user_id: int) -> bool:
+    def delete_user(self, user_id: int):
         if user_id in self.users:
             del self.users[user_id]
-            return True
-        return False
+        else:
+            raise UserNotFoundError(context={"user_id": user_id})
 
 
 # 싱글톤 인스턴스 & DI 팩토리

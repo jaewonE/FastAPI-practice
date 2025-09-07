@@ -1,6 +1,7 @@
 # services/todo.py
 from typing import Optional
 from schemas.todo import Todo, CreateTodoInput, UpdateTodoInput
+from error.exceptions import TodoNotFoundError
 
 
 class TodoService:
@@ -19,7 +20,10 @@ class TodoService:
         return todo
 
     def get_todo(self, todo_id: int) -> Optional[Todo]:
-        return self.todos.get(todo_id)
+        todo = self.todos.get(todo_id)
+        if not todo:
+            raise TodoNotFoundError(context={"todo_id": todo_id})
+        return todo
 
     def get_all_todos(self) -> list[Todo]:
         return sorted(self.todos.values(), key=lambda t: t.id)
@@ -27,7 +31,7 @@ class TodoService:
     def update_todo(self, todo_id: int, payload: UpdateTodoInput) -> Optional[Todo]:
         todo = self.todos.get(todo_id)
         if not todo:
-            return None
+            raise TodoNotFoundError(context={"todo_id": todo_id})
 
         changes = payload.model_dump(exclude_unset=True)
 
@@ -36,11 +40,11 @@ class TodoService:
         self.todos[todo_id] = updated
         return updated
 
-    def delete_todo(self, todo_id: int) -> bool:
+    def delete_todo(self, todo_id: int):
         if todo_id in self.todos:
             del self.todos[todo_id]
-            return True
-        return False
+        else:
+            raise TodoNotFoundError(context={"todo_id": todo_id})
 
 
 # 싱글톤 서비스 인스턴스 (추후 DI 컨테이너/Repo 교체 지점)
