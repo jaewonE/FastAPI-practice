@@ -13,7 +13,9 @@ from error.exceptions import (
     LoginFailedError,
     UserNotFoundError,
     UserAlreadyExistsError,
-    TodoNotFoundError
+    TodoNotFoundError,
+    ImageNotFoundError,
+    UnauthorizedError,
 )
 
 # HTTP 상태코드 매핑
@@ -22,6 +24,8 @@ STATUS_BY_TYPE: dict[type[AppError], int] = {
     UserAlreadyExistsError: HTTP_400_BAD_REQUEST,
     LoginFailedError: HTTP_401_UNAUTHORIZED,
     UserNotFoundError: HTTP_404_NOT_FOUND,
+    ImageNotFoundError: HTTP_404_NOT_FOUND,
+    UnauthorizedError: HTTP_401_UNAUTHORIZED,
 }
 
 

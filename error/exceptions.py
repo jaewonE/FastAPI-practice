@@ -35,3 +35,15 @@ class TodoNotFoundError(AppError):
     """Todo 미존재(서비스 내부 검색 실패 등)"""
     default_message = "Todo not found"
     code = "TODO_NOT_FOUND"
+
+
+class ImageNotFoundError(AppError):
+    """이미지 미존재(서비스 내부 검색 실패 등)"""
+    default_message = "Image not found"
+    code = "IMAGE_NOT_FOUND"
+
+
+class UnauthorizedError(AppError):
+    """인가 실패(소유권 불일치 등)"""
+    default_message = "Unauthorized"
+    code = "UNAUTHORIZED"

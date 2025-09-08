@@ -212,3 +212,4 @@ pyproject.toml
 uv.lock
 log/*
 Database.db
+S3/*
