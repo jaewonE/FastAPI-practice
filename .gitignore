@@ -213,3 +213,4 @@ uv.lock
 log/*
 Database.db
 S3/*
+assets/ratron-random_forest_model.joblib

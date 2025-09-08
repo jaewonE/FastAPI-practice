@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.post(
     "/predict",
-    summary="이미지 업로드 후 S3 경로 형식으로 반환",
+    summary="이미지 업로드 후 예측 결과 반환",
 )
 async def predict(
     image: UploadFile = File(...),
