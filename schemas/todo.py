@@ -1,7 +1,8 @@
 # schemas/todo.py
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from validators.string import TitleRule, OptionalDescriptionRule
+
 
 """
 입력값을 검증하는 대표적인 방법 2가지
@@ -15,6 +16,9 @@ class Todo(BaseModel):
     title: TitleRule
     description: OptionalDescriptionRule = None
     completed: bool = False
+
+    # Pydantic v2: allow validation from ORM objects
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreateTodoInput(BaseModel):

@@ -5,6 +5,8 @@ from services.user import UserService, get_user_service
 from utils.converters import remove_password
 from auth.auth_bearer import JWTBearer
 from auth.auth_handler import signJWT
+from sqlalchemy.orm import Session
+from db import get_db_session
 
 router = APIRouter(
     prefix="/users",
@@ -25,8 +27,9 @@ def create_user(
     response: Response,
     request: Request,
     svc: UserService = Depends(get_user_service),
+    db: Session = Depends(get_db_session),
 ) -> UserOut:
-    user = svc.create_user(payload)
+    user = svc.create_user(payload, db=db)
     return remove_password(user)
 
 
@@ -40,8 +43,9 @@ def create_user(
 def get_user(
     user_id: str = Depends(JWTBearer()),
     svc: UserService = Depends(get_user_service),
+    db: Session = Depends(get_db_session),
 ) -> UserWithTokenOutput:
-    user = svc.get_user(user_id)
+    user = svc.get_user(int(user_id), db=db)
     access_token = signJWT(user.id)
     return UserWithTokenOutput(user=remove_password(user), access_token=access_token)
 
@@ -55,8 +59,9 @@ def get_user(
 def login_user(
     payload: LoginUserInput,
     svc: UserService = Depends(get_user_service),
+    db: Session = Depends(get_db_session),
 ) -> UserWithTokenOutput:
-    user = svc.login_user(payload)
+    user = svc.login_user(payload, db=db)
     access_token = signJWT(user.id)
     return UserWithTokenOutput(user=remove_password(user), access_token=access_token)
 
@@ -73,8 +78,9 @@ def update_user(
     response: Response,
     user_id: str = Depends(JWTBearer()),
     svc: UserService = Depends(get_user_service),
+    db: Session = Depends(get_db_session),
 ) -> UserOut:
-    user = svc.update_user(user_id, payload)
+    user = svc.update_user(int(user_id), payload, db=db)
     response.headers["ETag"] = f'W/"user-{user.id}-0"'
     return remove_password(user)
 
@@ -88,6 +94,7 @@ def update_user(
 def delete_user(
     user_id: str = Depends(JWTBearer()),
     svc: UserService = Depends(get_user_service),
+    db: Session = Depends(get_db_session),
 ) -> None:
-    svc.delete_user(user_id)
+    svc.delete_user(int(user_id), db=db)
     return None

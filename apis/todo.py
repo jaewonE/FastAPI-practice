@@ -1,8 +1,10 @@
 # apis/todo.py
 from fastapi import APIRouter, Response, status, Depends, Request
+from db import get_db_session
 from schemas.todo import Todo, CreateTodoInput, UpdateTodoInput
 from services.todo import TodoService, get_todo_service
 from auth.auth_bearer import JWTBearer
+from sqlalchemy.orm import Session
 
 router = APIRouter(
     prefix="/todos",
@@ -22,9 +24,12 @@ router = APIRouter(
 def create_todo(
     payload: CreateTodoInput,
     svc: TodoService = Depends(get_todo_service),
-    user_id: str = Depends(JWTBearer())
+    user_id: str = Depends(JWTBearer()),
+    db: Session = Depends(get_db_session),
 ) -> Todo:
-    todo_out = svc.create_todo(payload)
+    todo_out = svc.create_todo(
+        payload, user_id=int(user_id), db=db
+    )
     return todo_out
 
 
@@ -36,9 +41,10 @@ def create_todo(
 )
 def get_all_todos(
     svc: TodoService = Depends(get_todo_service),
-    user_id: str = Depends(JWTBearer())
+    user_id: str = Depends(JWTBearer()),
+    db: Session = Depends(get_db_session),
 ) -> list[Todo]:
-    return svc.get_all_todos()
+    return svc.get_all_todos(user_id=int(user_id), db=db)
 
 
 @router.get(
@@ -50,9 +56,10 @@ def get_all_todos(
 def get_todo(
     todo_id: int,
     svc: TodoService = Depends(get_todo_service),
-    user_id: str = Depends(JWTBearer())
+    user_id: str = Depends(JWTBearer()),
+    db: Session = Depends(get_db_session),
 ) -> Todo:
-    todo = svc.get_todo(todo_id)
+    todo = svc.get_todo(todo_id, user_id=int(user_id), db=db)
     return todo
 
 
@@ -67,9 +74,10 @@ def update_todo(
     payload: UpdateTodoInput,
     response: Response,
     svc: TodoService = Depends(get_todo_service),
-    user_id: str = Depends(JWTBearer())
+    user_id: str = Depends(JWTBearer()),
+    db: Session = Depends(get_db_session),
 ) -> Todo:
-    todo = svc.update_todo(todo_id, payload)
+    todo = svc.update_todo(todo_id, payload, user_id=int(user_id), db=db)
     # 간단한 Weak ETag 재설정
     response.headers["ETag"] = f'W/"todo-{todo.id}-0"'
     return todo
@@ -83,7 +91,8 @@ def update_todo(
 def delete_todo(
     todo_id: int,
     svc: TodoService = Depends(get_todo_service),
-    user_id: str = Depends(JWTBearer())
+    user_id: str = Depends(JWTBearer()),
+    db: Session = Depends(get_db_session),
 ) -> None:
-    svc.delete_todo(todo_id)
+    svc.delete_todo(todo_id, user_id=int(user_id), db=db)
     return None
