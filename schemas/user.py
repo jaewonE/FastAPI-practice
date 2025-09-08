@@ -17,6 +17,11 @@ class UserOut(BaseModel):
     todo_id_list: List[int] = Field(default_factory=list)
 
 
+class UserWithTokenOutput(BaseModel):
+    user: UserOut
+    access_token: str
+
+
 class CreateUserInput(BaseModel):
     name: UserName
     password: UserPassword

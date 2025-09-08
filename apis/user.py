@@ -1,20 +1,16 @@
 # apis/user.py
 from fastapi import APIRouter, Response, status, HTTPException, Depends, Request
-from schemas.user import UserOut, CreateUserInput, UpdateUserInput, LoginUserInput
+from schemas.user import UserOut, CreateUserInput, UpdateUserInput, LoginUserInput, UserWithTokenOutput
 from services.user import UserService, get_user_service
 from utils.converters import remove_password
+from auth.auth_bearer import JWTBearer
+from auth.auth_handler import signJWT
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
     responses={404: {"description": "Not found"}},
 )
-
-
-def _set_creation_headers(request: Request, response: Response, user_id: int):
-    location_url = request.url_for("get_user", user_id=user_id)
-    response.headers["Location"] = str(location_url)
-    response.headers["ETag"] = f'W/"user-{user_id}-0"'
 
 
 @router.post(
@@ -31,48 +27,51 @@ def create_user(
     svc: UserService = Depends(get_user_service),
 ) -> UserOut:
     user = svc.create_user(payload)
-    _set_creation_headers(request, response, user.id)
     return remove_password(user)
 
 
 @router.get(
-    "/{user_id}",
-    response_model=UserOut,
+    "/me",
+    response_model=UserWithTokenOutput,
     response_model_exclude_none=True,
-    summary="Get a user by ID",
+    summary="Get the current user",
+    dependencies=[Depends(JWTBearer())]
 )
 def get_user(
-    user_id: int,
+    user_id: str = Depends(JWTBearer()),
     svc: UserService = Depends(get_user_service),
-) -> UserOut:
+) -> UserWithTokenOutput:
     user = svc.get_user(user_id)
-    return remove_password(user)
+    access_token = signJWT(user.id)
+    return UserWithTokenOutput(user=remove_password(user), access_token=access_token)
 
 
 @router.post(
     "/login",
-    response_model=UserOut,
+    response_model=UserWithTokenOutput,
     response_model_exclude_none=True,
     summary="Login a user",
 )
 def login_user(
     payload: LoginUserInput,
     svc: UserService = Depends(get_user_service),
-) -> UserOut:
+) -> UserWithTokenOutput:
     user = svc.login_user(payload)
-    return remove_password(user)
+    access_token = signJWT(user.id)
+    return UserWithTokenOutput(user=remove_password(user), access_token=access_token)
 
 
 @router.patch(
-    "/{user_id}",
+    "",
     response_model=UserOut,
     response_model_exclude_none=True,
     summary="Partially update a user by ID",
+    dependencies=[Depends(JWTBearer())]
 )
 def update_user(
-    user_id: int,
     payload: UpdateUserInput,
     response: Response,
+    user_id: str = Depends(JWTBearer()),
     svc: UserService = Depends(get_user_service),
 ) -> UserOut:
     user = svc.update_user(user_id, payload)
@@ -81,12 +80,13 @@ def update_user(
 
 
 @router.delete(
-    "/{user_id}",
+    "",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a user by ID",
+    summary="Delete the current user",
+    dependencies=[Depends(JWTBearer())]
 )
 def delete_user(
-    user_id: int,
+    user_id: str = Depends(JWTBearer()),
     svc: UserService = Depends(get_user_service),
 ) -> None:
     svc.delete_user(user_id)

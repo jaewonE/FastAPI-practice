@@ -1,21 +1,15 @@
 # apis/todo.py
-from fastapi import APIRouter, Response, status, HTTPException, Depends, Request
+from fastapi import APIRouter, Response, status, Depends, Request
 from schemas.todo import Todo, CreateTodoInput, UpdateTodoInput
 from services.todo import TodoService, get_todo_service
+from auth.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="/todos",
     tags=["todos"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(JWTBearer())]
 )
-
-
-def _set_creation_headers(request: Request, response: Response, todo_out: Todo):
-    # RFC 관례: Location + (선택) Weak ETag + Last-Modified
-    location_url = request.url_for("get_todo", todo_id=todo_out.id)
-    response.headers["Location"] = str(location_url)
-    updated_ts = 0
-    response.headers["ETag"] = f'W/"todo-{todo_out.id}-{updated_ts}"'
 
 
 @router.post(
@@ -23,16 +17,14 @@ def _set_creation_headers(request: Request, response: Response, todo_out: Todo):
     response_model=Todo,
     status_code=status.HTTP_201_CREATED,  # 성공시 201, 지정하지 않을 경우 자동 200.
     response_model_exclude_none=True,
-    summary="Create a new todo"
+    summary="Create a new todo",
 )
 def create_todo(
     payload: CreateTodoInput,
-    response: Response,  # 타입 기반 변수 주입. 다른 명칭 가능
-    request: Request,
     svc: TodoService = Depends(get_todo_service),
+    user_id: str = Depends(JWTBearer())
 ) -> Todo:
     todo_out = svc.create_todo(payload)
-    _set_creation_headers(request, response, todo_out)
     return todo_out
 
 
@@ -44,6 +36,7 @@ def create_todo(
 )
 def get_all_todos(
     svc: TodoService = Depends(get_todo_service),
+    user_id: str = Depends(JWTBearer())
 ) -> list[Todo]:
     return svc.get_all_todos()
 
@@ -57,6 +50,7 @@ def get_all_todos(
 def get_todo(
     todo_id: int,
     svc: TodoService = Depends(get_todo_service),
+    user_id: str = Depends(JWTBearer())
 ) -> Todo:
     todo = svc.get_todo(todo_id)
     return todo
@@ -73,6 +67,7 @@ def update_todo(
     payload: UpdateTodoInput,
     response: Response,
     svc: TodoService = Depends(get_todo_service),
+    user_id: str = Depends(JWTBearer())
 ) -> Todo:
     todo = svc.update_todo(todo_id, payload)
     # 간단한 Weak ETag 재설정
@@ -88,6 +83,7 @@ def update_todo(
 def delete_todo(
     todo_id: int,
     svc: TodoService = Depends(get_todo_service),
+    user_id: str = Depends(JWTBearer())
 ) -> None:
     svc.delete_todo(todo_id)
     return None

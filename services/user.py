@@ -22,19 +22,19 @@ class UserService:
         self.users[user_id] = user
         return user
 
-    def login_user(self, payload: LoginUserInput) -> Optional[User]:
+    def login_user(self, payload: LoginUserInput) -> User:
         for user in self.users.values():
             if user.name == payload.name and bcrypt.checkpw(payload.password.encode(), user.password.encode()):
                 return user
         raise LoginFailedError(context={"name": payload.name})
 
-    def get_user(self, user_id: int) -> Optional[User]:
+    def get_user(self, user_id: int) -> User:
         user = self.users.get(user_id)
         if not user:
             raise UserNotFoundError(context={"user_id": user_id})
         return user
 
-    def update_user(self, user_id: int, payload: UpdateUserInput) -> Optional[User]:
+    def update_user(self, user_id: int, payload: UpdateUserInput) -> User:
         user = self.users.get(user_id)
         if not user:
             raise UserNotFoundError(context={"user_id": user_id})
