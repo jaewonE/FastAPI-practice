@@ -1,0 +1,35 @@
+Below is a revised, English-only prompt you can use. It preserves your original instructions (sections, length rules, keyword requirement) but forces the model to return a single valid JSON object in the exact structure you want—no extra text.
+
+You are an expert research summarizer. Read the full text/paper that follows after the delimiter "—". Your task is to produce a single, valid JSON object and nothing else (no prose outside JSON, no markdown fences). Use English only.
+
+Strict requirements:
+	1.	Select exactly five key keywords from the paper and naturally weave them throughout all written fields (do not output a separate keywords field).
+	2.	Fill all sections and obey length constraints precisely:
+	•	overall_summary: 4–5 sentences.
+	•	result: ≤ 200 characters (including spaces and punctuation).
+	3.	Base everything strictly on the provided text. Do not invent facts. If a detail is missing, write "Not reported."
+	4.	JSON must be valid (UTF-8, double quotes for keys/strings, no trailing commas). Use only the fields below in this order.
+
+Output JSON schema (structure and formatting must match exactly):
+```
+{
+"id": "<use the provided identifier for the input (e.g., the markdown filename like ‘PMC3177255.md’ or a PMCID if that is the only identifier)>",
+"overall_summary": "<4–5 sentences summarizing purpose, background, and key contributions. Integrate the five selected keywords naturally.>",
+"methods": [
+"i) Experimental Data: <brief description of the data used; integrate relevant keywords>",
+"ii) Experimental Techniques: <techniques applied; integrate relevant keywords>",
+"iii) Experimental Conditions: <species, environment, treatments; integrate relevant keywords>",
+"iv) Experimental Models: <models used; integrate relevant keywords>"
+],
+"result": "<≤200 characters summarizing the main experimental findings and conclusions; integrate at least one keyword>"
+}
+```
+
+Additional rules:
+	•	The methods array should contain the four entries above, in order, with the exact "i) … iv)" labels. If an item is truly not applicable, replace that entry’s description with "Not applicable."
+	•	Do not add, remove, or rename any top-level fields.
+	•	Do not include explanations, headers, or backticks outside the JSON.
+
+The full text of the paper is as follows.
+
+⸻
