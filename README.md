@@ -1,4 +1,4 @@
-## CosmosX-NASA
+# CosmosX-NASA
 
 **Team GAsP**, the Gap Analysis System for Space Biology Publications. From keyword to hypothesis in seconds.
 
