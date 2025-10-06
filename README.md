@@ -2,7 +2,7 @@
 
 **Team GAsP**, the Gap Analysis System for Space Biology Publications. From keyword to hypothesis in seconds.
 
-### Demonstration video
+### Demonstration
 
 - **Project page**: https://tangerine-licorice-c439e6.netlify.app/
 - [Presentation](https://docs.google.com/presentation/d/1FlGfohdK5_PTNShhhBPBwXhRDZfBd4FB/edit?amp%3Bouid=109074628458883513610&amp%3Bamp%3Brtpof=true&amp%3Bamp%3Bsd=true&amp%3Bslide=id.p5&slide=id.p5#slide=id.p5)
